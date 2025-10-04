@@ -1,4 +1,4 @@
-Java Slot Machine (OOP Version)
+Java Slot Machine
 
 A simple **object-oriented Java slot machine** game built for fun and practice.  
 This project demonstrates clean code structure using **OOP principles** like encapsulation, abstraction, and modular design.
