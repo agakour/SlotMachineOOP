@@ -25,7 +25,6 @@ public class Menu {
         boolean running = true;
         // loop until player chooses to exit OR runs out of money
         while (running && player.getBalance() > 0) {
-            System.out.println("\nBalance: $" + player.getBalance());
             System.out.println("1 - Spin the slot");
             System.out.println("2 - Exit");
 
@@ -51,19 +50,39 @@ public class Menu {
 
     // single slot spin
     private void spinSlot() {
-        System.out.print("Enter your bet: ");
-        int bet;
-        // validate bet input - must be a number and within balance
-        try {
-            bet = Integer.parseInt(scanner.nextLine());
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid input! Enter a number.");
-            return;
+        int bet = 0;
+        boolean validBet = false;
+
+        //loop until the player enters a valid bet
+        while (!validBet) {
+            System.out.print("Enter your bet (Balance: $" + player.getBalance() + "): ");
+            String input = scanner.nextLine();
+
+            //check if input is a number
+            try {
+                bet = Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input! Please enter a whole number.");
+                continue;
+            }
+
+            if (!player.placeBet(bet)) {
+                //check if bet is greater than 0 and within balance
+                if (bet <= 0) {
+                    System.out.println("Bet must be greater than 0.");
+                } else {
+                    System.out.println("Bet cannot exceed your current balance of $" + player.getBalance());
+                }
+                continue;
+            }
+
+            //bet is valid
+            validBet = true;
         }
-        if (!player.placeBet(bet)) {
-            System.out.println("Invalid bet. You must bet a positive amount within your balance.");
-            return;
-        }
+
+        //subtract the bet from the balance
+        player.placeBet(bet);
+
         // perform the spin
         System.out.println("Spinning...");
         Symbol[] row = mechanics.spinRow();
