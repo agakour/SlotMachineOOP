@@ -22,8 +22,3 @@ Class -> Responsibility
 * `GameMechanics` → Slot spinning & payout logic
 * `Player` → Tracks player balance and bets
 * `Symbol` → Enum for slot symbols with emojis
-
----
-
-How to Run
-* Clone this repository → git clone https://github.com/agakour/SlotMachineOOP.git
