@@ -1,104 +1,120 @@
 import java.util.Scanner;
 
+/**
+ * Handles user interaction and the main game loop.
+ */
 public class Menu {
-    //FIELDS
-    private final GameMechanics mechanics; // game mechanics instance - handles spins and payouts
-    private final Scanner scanner; // scanner for user input
-    private final Player player; // player instance - manages balance and bets
+    private final GameMechanics mechanics;
+    private final Scanner scanner;
+    private final Player player;
 
-    //CONSTRUCTOR
-    // initializes game mechanics, scanner, and player with a starting balance
     public Menu() {
         this.mechanics = new GameMechanics();
         this.scanner = new Scanner(System.in);
         this.player = new Player(100);
     }
 
-    //METHODS
-
-    // show main menu loop
+    /** Displays the main menu and runs the game loop until the player exits or runs out of money. */
     public void showMenu() {
         System.out.println("**********************************");
         System.out.println("🍒 Welcome to Java Slot Machine 🍒");
         System.out.println("**********************************");
+        System.out.println();
 
         boolean running = true;
         // loop until player chooses to exit OR runs out of money
         while (running && player.getBalance() > 0) {
-            System.out.println("1 - Spin the slot");
-            System.out.println("2 - Exit");
+            System.out.println("Balance: $" + player.getBalance());
+            System.out.println("-------------------------------");
+            System.out.println("1 - 🎰 Spin the slot");
+            System.out.println("2 - 🚪 Exit");
 
             System.out.print("Your choice: ");
-            String choice = scanner.nextLine();
+            String choice = scanner.nextLine().trim();
 
             // handle menu choices
             switch (choice) {
                 case "1" -> spinSlot();
-                case "2" -> {
-                    System.out.println("Thanks for playing!");
-                    running = false;
-                }
+                case "2" -> running = false;
                 default -> System.out.println("Invalid option. Try again!");
             }
         }
 
-        // game over message
-        System.out.println("GAME OVER! Final balance: $" + player.getBalance());
+        // goodbye / game over message
+        System.out.println("==================================");
+        if (player.getBalance() <= 0) {
+            System.out.println("💀 GAME OVER! You ran out of money!");
+        } else {
+            System.out.println("👋 Thanks for playing!");
+        }
+        System.out.println("Final balance: $" + player.getBalance());
+        System.out.println("==================================");
     }
 
-    //METHODS
-
-    // single slot spin
+    /** Handles a single spin round: bet input, spinning, and payout. */
     private void spinSlot() {
         int bet = 0;
         boolean validBet = false;
 
-        //loop until the player enters a valid bet
         while (!validBet) {
-            System.out.print("Enter your bet (Balance: $" + player.getBalance() + "): ");
-            String input = scanner.nextLine();
+            System.out.print("🎲 Enter your bet (Balance: $" + player.getBalance() + ") or 0 to cancel: ");
+            String input = scanner.nextLine().trim();
 
-            //check if input is a number
             try {
                 bet = Integer.parseInt(input);
             } catch (NumberFormatException e) {
-                System.out.println("Invalid input! Please enter a whole number.");
-                continue;
-            }
-
-            if (!player.placeBet(bet)) {
-                //check if bet is greater than 0 and within balance
-                if (bet <= 0) {
-                    System.out.println("Bet must be greater than 0.");
-                } else {
-                    System.out.println("Bet cannot exceed your current balance of $" + player.getBalance());
+                try {
+                    Double.parseDouble(input);
+                    System.out.println("Decimal bets are not allowed! Please enter a whole number.");
+                } catch (NumberFormatException e2) {
+                    System.out.println("Invalid input! Please enter a whole number.");
                 }
                 continue;
             }
 
-            //bet is valid
+            if (bet == 0) {
+                System.out.println("Bet cancelled.");
+                return;
+            }
+
+            // validate bet range
+            if (bet < 0) {
+                System.out.println("Bet must be a positive number.");
+                continue;
+            } else if (bet > player.getBalance()) {
+                System.out.println("Bet cannot exceed your current balance of $" + player.getBalance());
+                continue;
+            }
+
             validBet = true;
         }
 
-        //subtract the bet from the balance
         player.placeBet(bet);
 
-        // perform the spin
-        System.out.println("Spinning...");
+        // spin with a short delay for effect
+        System.out.println();
+        System.out.println("🎰 Spinning...");
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
         Symbol[] row = mechanics.spinRow();
         mechanics.printRow(row);
-        // calculate and display payout
+
         int payout = mechanics.getPayout(row, bet);
-        // update player balance if there's a payout
+
         if (payout > 0) {
-            System.out.println("You won $" + payout + "!");
+            System.out.println("🎉 You won $" + payout + "!");
             player.addWinnings(payout);
         } else {
-            System.out.println("Sorry, you lost this round.");
+            System.out.println("💸 Sorry, you lost $" + bet + " this round.");
         }
+        System.out.println();
     }
 
-    // close scanner
+    /** Closes the scanner resource. */
     public void close() {
         scanner.close();
     }
